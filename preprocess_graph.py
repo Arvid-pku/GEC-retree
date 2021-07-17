@@ -23,15 +23,21 @@ import shutil
 
 def main(args):
     
+    # 导入用户的库
     utils.import_user_module(args) 
 
     print(args)
 
+    # 创建目标目录
     os.makedirs(args.destdir, exist_ok=True)
+
+    # Only process the source language
     target = not args.only_source
 
+    # default translation
     task = tasks.get_task(args.task)
 
+    # get train_path by postf
     def train_path(lang):
         return "{}{}".format(args.trainpref, ("." + lang) if lang else "")
 
@@ -57,6 +63,8 @@ def main(args):
             padding_factor=args.padding_factor,
         )
 
+    # !dict != dir
+    # check file exists
     if not args.srcdict and os.path.exists(dict_path(args.source_lang)):
         raise FileExistsError(dict_path(args.source_lang))
     if target and not args.tgtdict and os.path.exists(dict_path(args.target_lang)):
@@ -64,6 +72,8 @@ def main(args):
     if not args.edgedict:
         raise FileExistsError(args.edgedict)
 
+
+    # build dictionary
     if args.joined_dictionary:
         assert not args.srcdict or not args.tgtdict, \
             "cannot use both --srcdict and --tgtdict with --joined-dictionary"
@@ -94,8 +104,10 @@ def main(args):
         else:
             tgt_dict = None
 
+    # load edge dict
     edge_dict = task.load_dictionary(args.edgedict)
 
+    # store
     src_dict.save(dict_path(args.source_lang))
     edge_dict.save(dict_path('edge'))
 
